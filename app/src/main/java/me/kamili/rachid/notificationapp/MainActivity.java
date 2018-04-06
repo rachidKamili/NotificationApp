@@ -1,14 +1,22 @@
 package me.kamili.rachid.notificationapp;
 
+import android.Manifest;
+import android.app.AlarmManager;
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.Handler;
+import android.os.SystemClock;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -32,13 +40,6 @@ public class MainActivity extends AppCompatActivity implements OnCarClickListene
     protected RecyclerView.Adapter mAdapter;
     protected List<Car> mCarList = new ArrayList<>();
 
-    NotificationManager mNotificationManager;
-    NotificationCompat.Builder mBuilder;
-    PendingIntent mResultPendingIntent;
-    TaskStackBuilder mTaskStackBuilder;
-    Intent mResultIntent;
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,27 +48,36 @@ public class MainActivity extends AppCompatActivity implements OnCarClickListene
         bindRecyclerView();
         startIntentService();
 
-        initiateNotification();
     }
 
-    private void initiateNotification() {
-        mBuilder = new NotificationCompat.Builder(this);
-        mBuilder.setSmallIcon(R.mipmap.ic_launcher);
-        mResultIntent = new Intent(this, MainActivity.class);
-        mTaskStackBuilder = TaskStackBuilder.create(this);
-        mTaskStackBuilder.addParentStack(MainActivity.this);
+    private void scheduleNotification(final Notification notification, final int delay) {
 
-        mTaskStackBuilder.addNextIntent(mResultIntent);
-        mResultPendingIntent = mTaskStackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
-        mBuilder.setContentIntent(mResultPendingIntent);
+//        Intent notificationIntent = new Intent(this, MainActivity.class);
+//        TaskStackBuilder taskStackBuilder = TaskStackBuilder.create(this);
+//        taskStackBuilder.addParentStack(MainActivity.this);
+//        taskStackBuilder.addNextIntent(notificationIntent);
+//        final PendingIntent pendingIntent = taskStackBuilder.getPendingIntent( 0, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        Handler mHandler = new Handler();
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+//                long futureInMillis = SystemClock.elapsedRealtime() + delay;
+//                AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+//                alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, futureInMillis, pendingIntent);
+
+                ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).notify(1, notification);
+            }
+
+        }, delay);
     }
 
-    private void startNotification(String title, String content) {
-        mBuilder.setContentTitle(title);
-        mBuilder.setContentText(content);
-        mNotificationManager.notify(1, mBuilder.build());
+    private Notification getNotification(String content) {
+        Notification.Builder builder = new Notification.Builder(this);
+        builder.setContentTitle("Stolen Car : ");
+        builder.setContentText(content);
+        builder.setSmallIcon(R.mipmap.ic_launcher);
+        return builder.build();
     }
 
     private void startIntentService() {
@@ -102,6 +112,6 @@ public class MainActivity extends AppCompatActivity implements OnCarClickListene
 
     @Override
     public void onCarClick(Car car) {
-        startNotification("Stolen Car : ", car.getModel() + " " + car.getType() + " " + car.getYear());
+        scheduleNotification(getNotification(car.getModel() + " " + car.getType() + " " + car.getYear()), 5000);
     }
 }
