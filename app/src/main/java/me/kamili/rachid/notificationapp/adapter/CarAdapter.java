@@ -10,14 +10,17 @@ import android.widget.TextView;
 import java.util.List;
 
 import me.kamili.rachid.notificationapp.R;
+import me.kamili.rachid.notificationapp.listeners.OnCarClickListene;
 import me.kamili.rachid.notificationapp.model.Car;
 
 public class CarAdapter extends RecyclerView.Adapter<CarAdapter.ViewHolder> {
 
     private List<Car> mCarList;
+    private final OnCarClickListene listener;
 
-    public CarAdapter(List<Car> dataSet) {
+    public CarAdapter(List<Car> dataSet, OnCarClickListene listene ) {
         mCarList = dataSet;
+        listener = listene;
     }
 
     @NonNull
@@ -36,7 +39,10 @@ public class CarAdapter extends RecyclerView.Adapter<CarAdapter.ViewHolder> {
         holder.tvModel.setText(car.getModel());
         holder.tvType.setText(car.getType());
         holder.tvYear.setText(car.getYear());
+        holder.bind(mCarList.get(position), listener);
     }
+
+
 
     @Override
     public int getItemCount() {
@@ -52,6 +58,15 @@ public class CarAdapter extends RecyclerView.Adapter<CarAdapter.ViewHolder> {
             tvModel = itemView.findViewById(R.id.tvModel);
             tvType = itemView.findViewById(R.id.tvType);
             tvYear = itemView.findViewById(R.id.tvYear);
+        }
+
+        public void bind(final Car item, final OnCarClickListene listener) {
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override public void onClick(View v) {
+                    listener.onCarClick(item);
+                }
+            });
         }
     }
 }
