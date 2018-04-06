@@ -1,22 +1,10 @@
 package me.kamili.rachid.notificationapp;
 
-import android.Manifest;
-import android.app.AlarmManager;
 import android.app.Notification;
-import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Handler;
-import android.os.SystemClock;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -32,6 +20,7 @@ import java.util.List;
 import me.kamili.rachid.notificationapp.adapter.CarAdapter;
 import me.kamili.rachid.notificationapp.listeners.OnCarClickListene;
 import me.kamili.rachid.notificationapp.model.Car;
+import me.kamili.rachid.notificationapp.services.MusicService;
 import me.kamili.rachid.notificationapp.services.MyIntentService;
 
 public class MainActivity extends AppCompatActivity implements OnCarClickListene {
@@ -47,7 +36,12 @@ public class MainActivity extends AppCompatActivity implements OnCarClickListene
 
         bindRecyclerView();
         startIntentService();
+        startMusicService();
+    }
 
+    private void startMusicService() {
+        Intent service = new Intent(this, MusicService.class);
+        startService(service);
     }
 
     private void scheduleNotification(final Notification notification, final int delay) {
@@ -77,12 +71,13 @@ public class MainActivity extends AppCompatActivity implements OnCarClickListene
         builder.setContentTitle("Stolen Car : ");
         builder.setContentText(content);
         builder.setSmallIcon(R.mipmap.ic_launcher);
+        //builder.setWhen(SystemClock.elapsedRealtime() + 5000);
         return builder.build();
     }
 
     private void startIntentService() {
-        Intent intIntent = new Intent(this, MyIntentService.class);
-        startService(intIntent);
+        Intent musicIntent = new Intent(this, MyIntentService.class);
+        startService(musicIntent);
     }
 
     private void bindRecyclerView() {
@@ -113,5 +108,11 @@ public class MainActivity extends AppCompatActivity implements OnCarClickListene
     @Override
     public void onCarClick(Car car) {
         scheduleNotification(getNotification(car.getModel() + " " + car.getType() + " " + car.getYear()), 5000);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        stopService(intent);
     }
 }
